@@ -1,0 +1,46 @@
+# 应用配置
+replicaCount: 1
+
+image:
+  repository: ""  # 需要设置为 DOCKERHUB_USERNAME/tushare
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Tushare Token (通过--set或secrets设置)
+tushareToken: ""
+
+# MySQL配置
+mysql:
+  enabled: true
+  image:
+    repository: ubuntu/mysql
+    tag: 8.4-24.04_edge
+  rootPassword: "rootpassword"
+  database: tushare
+  user: tushare
+  password: "tusharepassword"
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+  service:
+    port: 3306
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi

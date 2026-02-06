@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tushare.fullname" . }}
+  labels:
+    {{- include "tushare.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tushare.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tushare.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          env:
+            - name: TUSHARE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "tushare.fullname" . }}
+                  key: tushare-token
+            - name: DB_HOST
+              value: {{ include "tushare.mysql.fullname" . }}
+            - name: DB_PORT
+              value: "{{ .Values.mysql.service.port }}"
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "tushare.fullname" . }}
+                  key: mysql-database
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "tushare.fullname" . }}
+                  key: mysql-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "tushare.fullname" . }}
+                  key: mysql-password
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
