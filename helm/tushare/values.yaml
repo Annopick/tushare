@@ -33,7 +33,7 @@ mysql:
   password: "tusharepassword"
   persistence:
     enabled: true
-    size: 5Gi
+    size: 1Gi
     storageClass: ""
   service:
     port: 3306
